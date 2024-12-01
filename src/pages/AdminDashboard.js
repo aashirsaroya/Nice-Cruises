@@ -9,9 +9,9 @@ import {
   FormField,
   TextInput,
   Select,
-  Menu,
   Pagination,
 } from 'grommet';
+import Header  from '../components/Header';
 
 const AdminDashboard = () => {
   const [bookings, setBookings] = useState([
@@ -85,35 +85,8 @@ const AdminDashboard = () => {
 
   return (
     <Box fill>
-     
-      <Box
-        direction="row"
-        justify="between"
-        align="center"
-        background="brand"
-        pad={{ horizontal: 'medium', vertical: 'small' }}
-        style={{ borderBottom: '2px solid #ddd' }}
-      >
-        <Heading
-          level={3}
-          margin="none"
-          color="white"
-          alignSelf="center"
-          style={{ flex: 1, textAlign: 'center' }}
-        >
-          NICE Cruises Admin Dashboard
-        </Heading>
-        <Menu
-          label="Admin Controls"
-          items={[
-            { label: 'Manage Cruises/Staterooms', onClick: () => setShowManageEntities(true) },
-            { label: 'Add Admin', onClick: () => setShowAddAdmin(true) },
-          ]}
-          dropAlign={{ top: 'bottom', right: 'right' }}
-        />
-      </Box>
+      <Header title="NICE Cruises Admin Dashboard" />
 
-     
       <Box pad="medium">
         <Heading level={3} margin={{ bottom: 'small' }}>
           Bookings
@@ -153,12 +126,11 @@ const AdminDashboard = () => {
         />
       </Box>
 
-     
       {showAddAdmin && (
         <Layer
           onEsc={() => setShowAddAdmin(false)}
           onClickOutside={() => setShowAddAdmin(false)}
-          style={{ borderRadius: '10px' }} 
+          style={{ borderRadius: '10px' }}
         >
           <Box pad="medium" gap="small" width="medium" round="small">
             <Heading level={3} margin="none">
@@ -188,12 +160,11 @@ const AdminDashboard = () => {
         </Layer>
       )}
 
-      
       {showManageEntities && (
         <Layer
           onEsc={() => setShowManageEntities(false)}
           onClickOutside={() => setShowManageEntities(false)}
-          style={{ borderRadius: '10px' }} 
+          style={{ borderRadius: '10px' }}
         >
           <Box pad="medium" gap="small" width="medium" round="small">
             <Heading level={3} margin="none">

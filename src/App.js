@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Grommet } from 'grommet';
+import { UserProvider } from './pages/UserContext';
+import PrivateRoute from './pages/PrivateRoute';
 import Home from './pages/HomePage';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,19 +25,29 @@ const theme = {
 };
 
 const App = () => (
-  <Grommet theme={theme} full>
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/booking" element={<Booking />} />
-        <Route path="/manage-bookings" element={<ManageBookings />} />
-        <Route path="/contact-support" element={<ContactSupport />} />
-        <Route path="/admin" element={<AdminDashboard />} /> 
-      </Routes>
-    </Router>
-  </Grommet>
+  <UserProvider>
+    <Grommet theme={theme} full>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route
+            path="/manage-bookings"
+            element={
+              <PrivateRoute element={<ManageBookings />} allowedRoles={['customer']} />
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute element={<AdminDashboard />} allowedRoles={['admin']} />
+            }
+          />
+        </Routes>
+      </Router>
+    </Grommet>
+  </UserProvider>
 );
-
 export default App;
