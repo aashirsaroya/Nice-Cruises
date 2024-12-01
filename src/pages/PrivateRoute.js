@@ -6,7 +6,7 @@ const PrivateRoute = ({ element, allowedRoles }) => {
   const { user } = useUser();
 
   if (!user || !user.isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   if (!allowedRoles.includes(user.role)) {
