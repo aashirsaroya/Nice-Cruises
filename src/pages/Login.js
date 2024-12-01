@@ -7,7 +7,7 @@ import { useUser } from './UserContext';
 const Login = () => {
   const [value, setValue] = useState({ email: '', password: '' });
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const { login } = useUser(); // Access login function from UserContext
+  const { login } = useUser(); 
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {

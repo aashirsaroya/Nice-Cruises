@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, DataTable, Heading, Layer, Text } from 'grommet';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header'; // Import the Header component
+import Header from '../components/Header'; 
 
 const ManageBookings = () => {
   const navigate = useNavigate();
@@ -64,11 +64,9 @@ const ManageBookings = () => {
 
   return (
     <Box fill>
-      {/* Header with logout functionality */}
       <Header title="Manage Your Bookings" />
 
       <Box pad="medium">
-        {/* Book a Cruise Button */}
         <Box margin={{ bottom: 'medium' }} align="center">
           <Button
             label="Book a Cruise"
@@ -78,7 +76,7 @@ const ManageBookings = () => {
           />
         </Box>
 
-        {/* Bookings Table */}
+        
         <DataTable
           columns={[
             {
@@ -144,12 +142,12 @@ const ManageBookings = () => {
           size="large"
         />
 
-        {/* Cancel Confirmation Popup */}
+      
         {showCancelConfirmation && (
           <Layer
             onEsc={() => setShowCancelConfirmation(false)}
             onClickOutside={() => setShowCancelConfirmation(false)}
-            style={{ borderRadius: '10px' }} // Rounded popup
+            style={{ borderRadius: '10px' }} 
           >
             <Box pad="medium" gap="medium" width="medium" round="small">
               <Heading level={3} margin="none">

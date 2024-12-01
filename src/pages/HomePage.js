@@ -61,18 +61,6 @@ const HomePage = () => (
           }}
         />
       </Link>
-      {/* <Link to="/booking">
-        <Button
-          icon={<Book color="white" />}
-          label="Book a Cruise"
-          secondary
-          style={{
-            color: 'white',
-            borderColor: 'white',
-            borderWidth: '2px',
-          }}
-        />
-      </Link> */}
     </Box>
   </Box>
 );

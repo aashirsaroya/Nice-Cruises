@@ -25,9 +25,6 @@ const Booking = () => {
     paymentMethod: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  // const [passengers, setPassengers] = useState([]);
-  // const [numAdults, setNumAdults] = useState(0);
-  // const [numChildren, setNumChildren] = useState(0);
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
 
   // Cruises and Data
@@ -158,7 +155,6 @@ const Booking = () => {
     }
   
     if (currentPage === 3) {
-      // Validate passenger details
       if (passengers.length === 0) {
         alert("Please add at least one passenger.");
         return;
