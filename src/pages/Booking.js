@@ -372,7 +372,6 @@ const removePassenger = (index) => {
                 : prev.nights || 1,
             }));
           }}
-          min={new Date().toISOString().split("T")[0]}
         />
       </FormField>
       <FormField label="Trip End Date" required>
