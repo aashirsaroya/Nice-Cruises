@@ -14,6 +14,8 @@ import {
   Text,
   DateInput,
 } from "grommet";
+import { useEffect } from "react";
+import { useUser } from "./UserContext";
 
 const Booking = () => {
   const [formData, setFormData] = useState({
@@ -186,17 +188,34 @@ const Booking = () => {
     return passengerCount * packageCost;
   };
 
+  const [groupId, setGroupId] = useState("");
+
+ 
+  useEffect(() => {
+    setGroupId(`group-${Date.now()}`);
+  }, []);
+
+  const { user } = useUser();
+
   const confirmBooking = () => {
+    const cruiseData = cruises.find((cruise) => cruise.name === formData.cruise);
+
     console.log("Booking Confirmed: ", JSON.stringify({
+      groupId: groupId,
+      currentDate: new Date().toLocaleString(),
+      email: user?.email,
       cruise: formData.cruise,
+      departurePort: cruiseData?.departurePort,
+      destinationPort: cruiseData?.destinationPort,
       sideOfShip: formData.sideOfShip,
       stateroom: formData.stateroom,
+      selectedRestaurants: formData.selectedRestaurants,
       packages: formData.packages,
-      passengerDetails: passengers,
+      passengerDetails: formData.passengerDetails,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      nights: formData.nights,
       paymentMethod: formData.paymentMethod,
-      nights: formData.nights || 1,
-      tripStartDate: formData.startDate,
-      tripEndDate: formData.endDate,
     }, null, 2));
     setIsBookingConfirmed(true);
   };
@@ -206,7 +225,7 @@ const [childCount, setChildCount] = useState(0);
 const [passengers, setPassengers] = useState([]);
 
 const generatePassengers = (adults, children) => {
-  const groupId = `group-${Date.now()}`;
+  const groupId = `group-${Date.now()}`; //To-do
   const newPassengers = [];
   for (let i = 1; i <= adults; i++) {
     newPassengers.push({ type: "adult", id: i, firstName: "", lastName: "", dob: "", gender: "", nationality: "" });
@@ -536,47 +555,114 @@ const removePassenger = (index) => {
   </Box>
 )}
 
-      {currentPage === 4 && (
-        <Box>
-          <Heading level={2}>Review and Confirm</Heading>
-          <Text>
-            <strong>Cruise:</strong> {formData.cruise}
-          </Text>
-          <Text>
-            <strong>Stateroom:</strong> {formData.stateroom}
-          </Text>
-          <Text>
-            <strong>Packages:</strong>{" "}
-            {formData.packages.map((pkg) => pkg.name).join(", ")}
-          </Text>
-          <Text>
-            <strong>Passengers:</strong>
-          </Text>
-          {passengers.map((p, i) => (
-            <Text key={i}>
-              {p.type}: {p.firstName} {p.lastName}, {p.gender}, {p.nationality}
-            </Text>
-          ))}
-          <Text>
-            <strong>Total Price:</strong> ${calculateTotal()}
-          </Text>
-          <FormField label="Payment Method" required>
-            <Select
-              options={["Cash", "Card"]}
-              value={formData.paymentMethod}
-              onChange={({ option }) =>
-                setFormData({ ...formData, paymentMethod: option })
-              }
-            />
-          </FormField>
-          <Button
-            label="Confirm Booking"
-            onClick={confirmBooking}
-            primary
-            margin={{ top: "medium" }}
-          />
-        </Box>
-      )}
+{currentPage === 4 && (
+  <Box>
+    <Heading level={2}>Entertainment Options</Heading>
+    <Text>All the below entertainment options are included for free:</Text>
+    <Box margin={{ top: "medium", bottom: "medium" }}>
+      <ul>
+        <li>Theaters (2 units on 8th and 10th floors)</li>
+        <li>Casino (1 unit on the 7th floor)</li>
+        <li>Library (2 units on 3rd and 4th floors)</li>
+        <li>Children Play Area (1 unit on 3rd floor)</li>
+        <li>Gym (1 unit on the 5th floor)</li>
+        <li>Outdoor Pool (1 unit on the 11th floor)</li>
+        <li>Indoor Pool (1 unit on the 9th floor)</li>
+        <li>Whirlpool (2 units on 9th and 11th floors)</li>
+        <li>Steam Room (1 unit on the 9th floor)</li>
+        <li>Sauna Room (1 unit on the 9th floor)</li>
+        <li>Yoga Room (1 unit on the 5th floor)</li>
+        <li>Night Club (2 units on 8th and 11th floors)</li>
+        <li>Tennis Court (1 unit on the 11th floor)</li>
+      </ul>
+    </Box>
+
+    <Heading level={2}>Select Two Restaurants</Heading>
+    <Text>Please select exactly two restaurants from the list below:</Text>
+    <FormField>
+      <CheckBoxGroup
+        options={[
+          "Common Buffet (6th Floor)",
+          "Italian Specialty (8th Floor)",
+          "Mexican Specialty (7th Floor)",
+          "La-carte Continental (6th Floor)",
+          "Tokyo Ramen Japanese (5th Floor)",
+          "Ming Wok Chinese (5th Floor)",
+          "Round Clock Café (10th Floor)",
+          "Pool Bar (10th Floor)",
+          "Stout Bar (7th Floor)",
+        ]}
+        value={formData.selectedRestaurants || []}
+        onChange={({ value }) => setFormData({ ...formData, selectedRestaurants: value })}
+      />
+    </FormField>
+    {formData.selectedRestaurants?.length !== 2 && (
+      <Text color="status-critical">
+        You must select exactly two restaurants.
+      </Text>
+    )}
+    <Box direction="row" justify="between" margin={{ top: "medium" }}>
+      <Button label="Back" onClick={handlePreviousPage} />
+      <Button
+        label="Next"
+        onClick={() => {
+          if (formData.selectedRestaurants?.length !== 2) {
+            alert("Please select exactly two restaurants before proceeding.");
+            return;
+          }
+          handleNextPage();
+        }}
+        primary
+      />
+    </Box>
+  </Box>
+)}
+
+{currentPage === 5 && (
+  <Box>
+    <Heading level={2}>Review and Confirm</Heading>
+    <Text>
+      <strong>Cruise:</strong> {formData.cruise}
+    </Text>
+    <Text>
+      <strong>Stateroom:</strong> {formData.stateroom}
+    </Text>
+    <Text>
+      <strong>Packages:</strong>{" "}
+      {formData.packages.map((pkg) => pkg.name).join(", ")}
+    </Text>
+    <Text>
+      <strong>Selected Restaurants:</strong>{" "}
+      {formData.selectedRestaurants?.join(", ")}
+    </Text>
+    <Text>
+      <strong>Passengers:</strong>
+    </Text>
+    {passengers.map((p, i) => (
+      <Text key={i}>
+        {p.type}: {p.firstName} {p.lastName}, {p.gender}, {p.nationality}
+      </Text>
+    ))}
+    <Text>
+      <strong>Total Price:</strong> ${calculateTotal()}
+    </Text>
+    <FormField label="Payment Method" required>
+      <Select
+        options={["Cash", "Card"]}
+        value={formData.paymentMethod}
+        onChange={({ option }) =>
+          setFormData({ ...formData, paymentMethod: option })
+        }
+      />
+    </FormField>
+    <Button
+      label="Confirm Booking"
+      onClick={confirmBooking}
+      primary
+      margin={{ top: "medium" }}
+    />
+  </Box>
+)}
 
       {isBookingConfirmed && (
         <Layer

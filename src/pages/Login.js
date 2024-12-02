@@ -20,11 +20,11 @@ const Login = () => {
     // Check credentials
     if (email === 'admin@gmail.com' && password === 'admin123') {
       // Log in as admin
-      login({ role: 'admin', isAuthenticated: true });
+      login({ email, role: 'admin', isAuthenticated: true });
       navigate('/admin');
     } else if (email && password) {
       // Log in as customer
-      login({ role: 'customer', isAuthenticated: true });
+      login({ email, role: 'customer', isAuthenticated: true });
       navigate('/manage-bookings');
     } else {
       alert('Invalid credentials. Please try again.');
@@ -123,6 +123,20 @@ const Login = () => {
               textDecoration: 'underline',
               color: '#6C63FF',
               fontWeight: 'bold',
+            }}
+          />
+        </Box>
+        <Box align="center" margin={{ top: 'medium' }}>
+          <Button
+            label="Not a Returning User? Register Here"
+            plain
+            style={{
+              textDecoration: 'underline',
+              color: '#6C63FF',
+              fontWeight: 'bold',
+            }}
+            onClick={() => {
+              navigate('/register')
             }}
           />
         </Box>
