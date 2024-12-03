@@ -28,6 +28,9 @@ const Booking = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
+  const [adultCount, setAdultCount] = useState(0);
+  const [childCount, setChildCount] = useState(0);
+  const [passengers, setPassengers] = useState([]);
 
   // Cruises and Data
   const cruises = [
@@ -195,34 +198,41 @@ const Booking = () => {
     setGroupId(`group-${Date.now()}`);
   }, []);
 
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, passengerDetails: passengers }));
+  }, [passengers]);
+
   const { user } = useUser();
+
+  const updatedFormData = {
+    ...formData,
+    passengerDetails: passengers,
+  };
 
   const confirmBooking = () => {
     const cruiseData = cruises.find((cruise) => cruise.name === formData.cruise);
 
     console.log("Booking Confirmed: ", JSON.stringify({
-      groupId: groupId,
-      currentDate: new Date().toLocaleString(),
-      email: user?.email,
-      cruise: formData.cruise,
-      departurePort: cruiseData?.departurePort,
-      destinationPort: cruiseData?.destinationPort,
-      sideOfShip: formData.sideOfShip,
-      stateroom: formData.stateroom,
-      selectedRestaurants: formData.selectedRestaurants,
-      packages: formData.packages,
-      passengerDetails: formData.passengerDetails,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      nights: formData.nights,
-      paymentMethod: formData.paymentMethod,
+        groupId: groupId,
+        currentDate: new Date().toLocaleString(),
+        email: user?.email,
+        cruise: updatedFormData.cruise,
+        departurePort: cruiseData?.departurePort,
+        destinationPort: cruiseData?.destinationPort,
+        sideOfShip: updatedFormData.sideOfShip,
+        stateroom: updatedFormData.stateroom,
+        selectedRestaurants: updatedFormData.selectedRestaurants,
+        packages: updatedFormData.packages,
+        passengerDetails: updatedFormData.passengerDetails,
+        startDate: updatedFormData.startDate,
+        endDate: updatedFormData.endDate,
+        nights: updatedFormData.nights,
+        paymentMethod: updatedFormData.paymentMethod,
     }, null, 2));
     setIsBookingConfirmed(true);
   };
 
-  const [adultCount, setAdultCount] = useState(0);
-const [childCount, setChildCount] = useState(0);
-const [passengers, setPassengers] = useState([]);
+
 
 const generatePassengers = (adults, children) => {
   const groupId = `group-${Date.now()}`; //To-do
