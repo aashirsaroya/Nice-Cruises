@@ -1,12 +1,84 @@
 import React, { useState } from 'react';
-import { Box, Button, Form, FormField, Heading, TextInput } from 'grommet';
+import { Box, Button, Form, FormField, Heading, TextInput, Layer, Text } from 'grommet';
 import { View, Hide } from 'grommet-icons';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 
+const ForgotPasswordPopup = ({ onClose }) => {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleForgotPassword = async () => {
+    setMessage('');
+    setError('');
+
+    try {
+      const response = await fetch('http://srinathapi', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage(data.message); 
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      setError('Failed to connect to the server. Please try again later.');
+    }
+  };
+
+  return (
+    <Layer
+      onEsc={onClose}
+      onClickOutside={onClose}
+      responsive
+      position="center"
+      round="small"
+    >
+      <Box pad="medium" gap="small" width="medium">
+        <Heading level={3} margin="none">
+          Forgot Password
+        </Heading>
+        <Text>
+          Enter your email, and we will send you instructions to reset your password.
+        </Text>
+        <Form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleForgotPassword();
+          }}
+        >
+          <FormField name="email" label="Email" required>
+            <TextInput
+              name="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </FormField>
+          <Box direction="row" gap="medium" justify="center" margin={{ top: 'medium' }}>
+            <Button type="submit" label="Send Email" primary />
+            <Button label="Cancel" onClick={onClose} />
+          </Box>
+        </Form>
+        {message && <Text color="status-ok">{message}</Text>}
+        {error && <Text color="status-critical">{error}</Text>}
+      </Box>
+    </Layer>
+  );
+};
+
 const Login = () => {
   const [value, setValue] = useState({ email: '', password: '' });
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login } = useUser(); 
   const navigate = useNavigate();
 
@@ -124,6 +196,7 @@ const Login = () => {
               color: '#6C63FF',
               fontWeight: 'bold',
             }}
+            onClick={() => setShowForgotPassword(true)}
           />
         </Box>
         <Box align="center" margin={{ top: 'medium' }}>
@@ -141,6 +214,10 @@ const Login = () => {
           />
         </Box>
       </Box>
+
+      {showForgotPassword && (
+        <ForgotPasswordPopup onClose={() => setShowForgotPassword(false)} />
+      )}
     </Box>
   );
 };
