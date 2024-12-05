@@ -2,8 +2,30 @@ import React, { useState } from 'react';
 import { Box, Button, Form, FormField, Heading, TextInput, Select } from 'grommet';
 import { View, Hide } from 'grommet-icons'; 
 
-const countryOptions = ['United States', 'Canada', 'United Kingdom', 'India', 'Australia']; // Fill these later
-const stateOptions = ['California', 'Texas', 'New York', 'Florida', 'Illinois']; // Dummy for now
+const countryOptions = [
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 
+  'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 
+  'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei Darussalam', 'Bulgaria', 'Burkina Faso', 
+  'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 
+  'Colombia', 'Comoros', 'Congo (Congo-Brazzaville)', 'Congo (Democratic Republic of the Congo)', 'Costa Rica', 'Croatia', 
+  'Cuba', 'Cyprus', 'Czechia (Czech Republic)', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 
+  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini (fmr. "Swaziland")', 'Ethiopia', 'Fiji', 'Finland', 
+  'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 
+  'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 
+  'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Korea (North)', 'Korea (South)', 'Kuwait', 'Kyrgyzstan', 
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 
+  'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 
+  'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar (formerly Burma)', 'Namibia', 'Nauru', 
+  'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Macedonia (formerly Macedonia)', 'Norway', 
+  'Oman', 'Pakistan', 'Palau', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 
+  'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 
+  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 
+  'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 
+  'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 
+  'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 
+  'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+];
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -27,8 +49,8 @@ const Register = () => {
   };
 
   const handleRegister = () => {
-    console.log('Registering User:', formData);
-    // Srinath User Register API
+    console.log('Registering User:', JSON.stringify(formData, null, 2)); // Log form data as JSON
+    // Add your API call here
   };
 
   return (
@@ -210,14 +232,15 @@ const Register = () => {
                 name="state"
                 label="State"
                 required
+                validate={(value) => (value ? undefined : 'State is required')}
               >
-                <Select
+                <TextInput
                   name="state"
-                  options={stateOptions}
-                  placeholder="Select your state"
+                  placeholder="Enter your state (e.g. NY)"
+                  style={{ borderColor: '#ccc', color: '#333' }}
                   value={formData.state}
-                  onChange={({ option }) =>
-                    setFormData((prev) => ({ ...prev, state: option }))
+                  onChange={({ target }) =>
+                    setFormData((prev) => ({ ...prev, state: target.value }))
                   }
                 />
               </FormField>
@@ -225,6 +248,7 @@ const Register = () => {
                 name="country"
                 label="Country"
                 required
+                validate={(value) => (value ? undefined : 'Country is required')}
               >
                 <Select
                   name="country"

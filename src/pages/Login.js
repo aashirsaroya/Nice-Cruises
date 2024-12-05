@@ -24,7 +24,7 @@ const ForgotPasswordPopup = ({ onClose }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setMessage(data.message); 
+        setMessage(data.message);
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Something went wrong. Please try again.');
@@ -35,17 +35,9 @@ const ForgotPasswordPopup = ({ onClose }) => {
   };
 
   return (
-    <Layer
-      onEsc={onClose}
-      onClickOutside={onClose}
-      responsive
-      position="center"
-      round="small"
-    >
+    <Layer onEsc={onClose} onClickOutside={onClose} responsive position="center" round="small">
       <Box pad="medium" gap="small" width="medium">
-        <Heading level={3} margin="none">
-          Forgot Password
-        </Heading>
+        <Heading level={3} margin="none">Forgot Password</Heading>
         <Text>
           Enter your email, and we will send you instructions to reset your password.
         </Text>
@@ -75,11 +67,16 @@ const ForgotPasswordPopup = ({ onClose }) => {
   );
 };
 
+const validateEmail = (email) => {
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailPattern.test(email);
+};
+
 const Login = () => {
   const [value, setValue] = useState({ email: '', password: '' });
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { login } = useUser(); 
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -89,13 +86,15 @@ const Login = () => {
   const handleSubmit = () => {
     const { email, password } = value;
 
-    // Check credentials
+    if (!validateEmail(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
     if (email === 'admin@gmail.com' && password === 'admin123') {
-      // Log in as admin
       login({ email, role: 'admin', isAuthenticated: true });
       navigate('/admin');
     } else if (email && password) {
-      // Log in as customer
       login({ email, role: 'customer', isAuthenticated: true });
       navigate('/manage-bookings');
     } else {
@@ -153,6 +152,11 @@ const Login = () => {
                 setValue((prev) => ({ ...prev, email: event.target.value }))
               }
             />
+            {!validateEmail(value.email) && value.email && (
+              <Text color="status-critical" size="small">
+                Please enter a valid email address.
+              </Text>
+            )}
           </FormField>
           <FormField name="password" label="Password" required>
             <Box direction="row" align="center" style={{ position: 'relative' }}>
