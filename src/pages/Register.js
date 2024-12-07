@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Button, Form, FormField, Heading, TextInput, Select } from 'grommet';
 import { View, Hide } from 'grommet-icons'; 
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const countryOptions = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 
@@ -26,6 +28,7 @@ const countryOptions = [
   'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ];
 
+// const navigate = useNavigate();
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -47,10 +50,32 @@ const Register = () => {
   const togglePasswordVisibility = () => {
     setPasswordVisible(!isPasswordVisible);
   };
+  const navigate = useNavigate();
 
-  const handleRegister = () => {
-    console.log('Registering User:', JSON.stringify(formData, null, 2)); // Log form data as JSON
-    // Add your API call here
+
+  const handleRegister = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/api/users/register', formData, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.status === 201) {
+        alert('Registration successful! Redirecting to login...');
+        navigate('/login');
+      }
+    } catch (error) {
+      const status = error.response ? error.response.status : 500;
+      switch(status) {
+        case 409:
+          alert('User already registered. Please log in.');
+          break;
+        case 400:
+          alert('Invalid data. Please check your entries.');
+          break;
+        default:
+          alert('An error occurred. Please try again.');
+          break;
+      }
+    }
   };
 
   return (

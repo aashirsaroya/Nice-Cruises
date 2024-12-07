@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Box, Button, Form, FormField, Heading, TextInput, Layer, Text } from 'grommet';
+import axios from 'axios';
+import {
+  Box,
+  Button,
+  Form,
+  FormField,
+  Heading,
+  TextInput,
+  Layer,
+  Text,
+} from 'grommet';
 import { View, Hide } from 'grommet-icons';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
@@ -14,23 +24,13 @@ const ForgotPasswordPopup = ({ onClose }) => {
     setError('');
 
     try {
-      const response = await fetch('http://srinathapi', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+      const response = await axios.post('http://localhost:8080/api/users/forgot-password', {
+        email,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMessage(data.message);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Something went wrong. Please try again.');
-      }
+      setMessage(response.data.message);
     } catch (err) {
-      setError('Failed to connect to the server. Please try again later.');
+      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
     }
   };
 
@@ -83,7 +83,7 @@ const Login = () => {
     setPasswordVisible(!isPasswordVisible);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const { email, password } = value;
 
     if (!validateEmail(email)) {
@@ -91,14 +91,28 @@ const Login = () => {
       return;
     }
 
-    if (email === 'admin@gmail.com' && password === 'admin123') {
-      login({ email, role: 'admin', isAuthenticated: true });
-      navigate('/admin');
-    } else if (email && password) {
-      login({ email, role: 'customer', isAuthenticated: true });
-      navigate('/manage-bookings');
-    } else {
-      alert('Invalid credentials. Please try again.');
+    try {
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email,
+        password,
+      });
+
+      const { isAdmin } = response.data;
+      
+
+      // Compare isAdmin string value explicitly
+      login({ 
+        email, 
+        role: isAdmin === true ? 'admin' : 'customer', 
+        isAuthenticated: true 
+      });
+      navigate(isAdmin === true ? '/admin' : '/manage-bookings');
+    } catch (err) {
+      if (err.response?.status === 401) {
+        alert('Invalid email or password.');
+      } else {
+        alert('Failed to connect to the server. Please try again later.');
+      }
     }
   };
 
@@ -141,7 +155,10 @@ const Login = () => {
         <Form
           value={value}
           onChange={(nextValue) => setValue(nextValue)}
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
         >
           <FormField name="email" label="Email" required>
             <TextInput
@@ -212,9 +229,7 @@ const Login = () => {
               color: '#6C63FF',
               fontWeight: 'bold',
             }}
-            onClick={() => {
-              navigate('/register')
-            }}
+            onClick={() => navigate('/register')}
           />
         </Box>
       </Box>
