@@ -12,6 +12,7 @@ import {
   Pagination,
 } from 'grommet';
 import Header  from '../components/Header';
+import axios from 'axios';
 
 const AdminDashboard = () => {
   const [bookings, setBookings] = useState([
@@ -59,11 +60,26 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const handleAddAdmin = () => {
-    console.log('Adding Admin:', adminForm);
+const handleAddAdmin = async () => {
+  try {
+    const payload = {
+      firstName: adminForm.firstName, 
+      lastName: adminForm.lastName,
+      email: adminForm.username, 
+      password: adminForm.password,
+    };
+
+    const response = await axios.post('http://localhost:8080/api/users/admin/register', payload);
+    console.log(response.data); 
+    alert('Admin registered successfully!');
     setShowAddAdmin(false);
-    setAdminForm({ username: '', password: '' });
-  };
+    setAdminForm({ username: '', password: '', firstName: '', lastName: '' });
+  } catch (error) {
+    console.error(error);
+    alert('Error occurred while registering Admin: ' + error.response.data);
+  }
+};
+
 
   const handleAddEntity = () => {
     if (entityForm.type === 'Cruise') {
@@ -84,8 +100,16 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Box fill>
-      <Header title="NICE Cruises Admin Dashboard" />
+     <Box fill>
+        <Header title="NICE Cruises Admin Dashboard" />
+
+        <Box direction="row" justify="evenly" pad={{ vertical: 'small' }}>
+          <Button
+            label="Add Admin"
+            onClick={() => setShowAddAdmin(true)}
+            primary
+          />
+      </Box>
 
       <Box pad="medium">
         <Heading level={3} margin={{ bottom: 'small' }}>
@@ -137,25 +161,31 @@ const AdminDashboard = () => {
               Add Admin
             </Heading>
             <Form
-              value={adminForm}
-              onChange={(nextValue) => setAdminForm(nextValue)}
-              onSubmit={handleAddAdmin}
-            >
-              <FormField name="username" label="Username" required>
-                <TextInput name="username" placeholder="Enter username" />
-              </FormField>
-              <FormField name="password" label="Password" required>
-                <TextInput
-                  name="password"
-                  type="password"
-                  placeholder="Enter password"
-                />
-              </FormField>
-              <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
-                <Button label="Cancel" onClick={() => setShowAddAdmin(false)} />
-                <Button label="Add" type="submit" primary />
-              </Box>
-            </Form>
+            value={adminForm}
+            onChange={(nextValue) => setAdminForm(nextValue)}
+            onSubmit={handleAddAdmin}
+          >
+            <FormField name="firstName" label="First Name" required>
+              <TextInput name="firstName" placeholder="Enter first name" />
+            </FormField>
+            <FormField name="lastName" label="Last Name" required>
+              <TextInput name="lastName" placeholder="Enter last name" />
+            </FormField>
+            <FormField name="username" label="Email" required>
+              <TextInput name="username" placeholder="Enter email" />
+            </FormField>
+            <FormField name="password" label="Password" required>
+              <TextInput
+                name="password"
+                type="password"
+                placeholder="Enter password"
+              />
+            </FormField>
+            <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
+              <Button label="Cancel" onClick={() => setShowAddAdmin(false)} />
+              <Button label="Add" type="submit" primary />
+            </Box>
+          </Form>
           </Box>
         </Layer>
       )}

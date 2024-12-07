@@ -7,65 +7,12 @@ import {
   FormField,
   Heading,
   TextInput,
-  Layer,
   Text,
 } from 'grommet';
 import { View, Hide } from 'grommet-icons';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
-
-const ForgotPasswordPopup = ({ onClose }) => {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-
-  const handleForgotPassword = async () => {
-    setMessage('');
-    setError('');
-
-    try {
-      const response = await axios.post('http://localhost:8080/api/users/forgot-password', {
-        email,
-      });
-
-      setMessage(response.data.message);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
-    }
-  };
-
-  return (
-    <Layer onEsc={onClose} onClickOutside={onClose} responsive position="center" round="small">
-      <Box pad="medium" gap="small" width="medium">
-        <Heading level={3} margin="none">Forgot Password</Heading>
-        <Text>
-          Enter your email, and we will send you instructions to reset your password.
-        </Text>
-        <Form
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleForgotPassword();
-          }}
-        >
-          <FormField name="email" label="Email" required>
-            <TextInput
-              name="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </FormField>
-          <Box direction="row" gap="medium" justify="center" margin={{ top: 'medium' }}>
-            <Button type="submit" label="Send Email" primary />
-            <Button label="Cancel" onClick={onClose} />
-          </Box>
-        </Form>
-        {message && <Text color="status-ok">{message}</Text>}
-        {error && <Text color="status-critical">{error}</Text>}
-      </Box>
-    </Layer>
-  );
-};
+import ForgotPasswordPopup from '../components/ForgotPasswordPopup';
 
 const validateEmail = (email) => {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -76,6 +23,7 @@ const Login = () => {
   const [value, setValue] = useState({ email: '', password: '' });
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
   const { login } = useUser();
   const navigate = useNavigate();
 
@@ -98,20 +46,19 @@ const Login = () => {
       });
 
       const { isAdmin } = response.data;
-      
 
-      // Compare isAdmin string value explicitly
-      login({ 
-        email, 
-        role: isAdmin === true ? 'admin' : 'customer', 
-        isAuthenticated: true 
+      // Compare isAdmin explicitly
+      login({
+        email,
+        role: isAdmin === true ? 'admin' : 'customer',
+        isAuthenticated: true,
       });
       navigate(isAdmin === true ? '/admin' : '/manage-bookings');
     } catch (err) {
-      if (err.response?.status === 401) {
-        alert('Invalid email or password.');
+      if (err.response?.status === 400) {
+        setLoginError('Invalid email or password.');
       } else {
-        alert('Failed to connect to the server. Please try again later.');
+        setLoginError('Failed to connect to the server. Please try again later.');
       }
     }
   };
@@ -208,6 +155,11 @@ const Login = () => {
             <Button type="submit" label="Login" primary />
           </Box>
         </Form>
+        {loginError && (
+          <Text color="status-critical" margin={{ top: 'small' }}>
+            {loginError}
+          </Text>
+        )}
         <Box align="center" margin={{ top: 'medium' }}>
           <Button
             label="Forgot Password?"

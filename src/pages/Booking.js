@@ -326,6 +326,7 @@ const Booking = () => {
 
   const confirmBooking = () => {
     const cruiseData = cruises.find((cruise) => cruise.name === formData.cruise);
+    const totalAmountPayable = calculateTotal().toFixed(2);
 
     console.log(
       "Booking Confirmed: ",
@@ -346,6 +347,7 @@ const Booking = () => {
           endDate: updatedFormData.endDate,
           nights: updatedFormData.nights,
           paymentMethod: updatedFormData.paymentMethod,
+          price: totalAmountPayable,
         },
         null,
         2
@@ -966,10 +968,14 @@ const Booking = () => {
           onClickOutside={() => setIsBookingConfirmed(false)}
         >
           <Box pad="medium" gap="small" round="large">
-            <Text>Your booking has been confirmed!</Text>
+            <Text>Are you sure you want to confirm your booking?</Text>
             <Text>
-              <strong>Total Amount:</strong> ${calculateTotal().toFixed(2)}
+              <strong>Total Amount Due:</strong> ${calculateTotal().toFixed(2)}
             </Text>
+            <Button 
+            label="Confirm"
+            onClick={{}}
+            />
             <Button
               label="Close"
               onClick={() => setIsBookingConfirmed(false)}
