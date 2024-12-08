@@ -14,6 +14,7 @@ import {
   CheckBoxGroup,
 } from "grommet";
 import { useUser } from "./UserContext";
+import { useNavigate } from "react-router-dom";
 
 const Booking = () => {
   const [formData, setFormData] = useState({
@@ -192,6 +193,8 @@ const Booking = () => {
     "Starboard Side": 1.3,
   };
 
+  const navigate = useNavigate();
+
   const confirmBookingClick = async () => {
     const cruiseData = cruises.find((cruise) => cruise.name === updatedFormData.cruise);
     const totalAmountPayable = calculateTotal().toFixed(2);
@@ -244,6 +247,7 @@ const Booking = () => {
         console.log("Booking successful:", data);
         alert("Booking confirmed successfully!");
         setIsBookingConfirmed(false);
+        navigate("/manage-bookings");
       } else {
         console.error("Failed to confirm booking", response.status);
         alert("Failed to confirm booking. Please try again.");

@@ -1,65 +1,117 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, DataTable, Heading, Layer, Text } from 'grommet';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header'; 
+import Header from '../components/Header';
+import { useUser } from './UserContext';
 
 const ManageBookings = () => {
   const navigate = useNavigate();
-
-  // Dummy data for customer bookings
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      cruise: 'Caribbean Getaway',
-      stateroom: 'The Haven Suite',
-      passengers: 2,
-      nights: 5,
-      total: '$1200',
-      date: '2024-11-20',
-      bookingDate: '2024-11-10',
-      status: 'Confirmed',
-    },
-    {
-      id: 2,
-      cruise: 'Mediterranean Adventure',
-      stateroom: 'Oceanview Window',
-      passengers: 4,
-      nights: 7,
-      total: '$2000',
-      date: '2024-12-01',
-      bookingDate: '2024-11-15',
-      status: 'Confirmed',
-    },
-    {
-      id: 3,
-      cruise: 'Alaskan Voyage',
-      stateroom: 'Inside Stateroom',
-      passengers: 1,
-      nights: 3,
-      total: '$450',
-      date: '2024-11-25',
-      bookingDate: '2024-11-18',
-      status: 'Cancelled',
-    },
-  ]);
-
+  const [bookings, setBookings] = useState([]);
+  const [columns, setColumns] = useState([]);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const handleBookCruise = () => {
-    navigate('/booking');
+  const { user } = useUser();
+  const fetchBookings = async () => {
+    try {
+      const email = user.email; 
+      const response = await fetch(`http://localhost:8080/api/manage-booking?email=${email}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data); // Set the bookings from the response
+  
+        // Generate dynamic columns
+        if (data.length > 0) {
+          const dynamicColumns = [
+            {
+              property: 'cruiseName',
+              header: 'Cruise Name',
+              sortable: true,
+            },
+            {
+              property: 'stateRoomName',
+              header: 'Stateroom Name',
+              sortable: true,
+            },
+            {
+              property: 'startDate',
+              header: 'Start Date',
+              sortable: true,
+            },
+            {
+              property: 'endDate',
+              header: 'End Date',
+              sortable: true,
+            },
+            {
+              property: 'peopleNum',
+              header: 'No. of People',
+              sortable: true,
+            },
+            {
+              property: 'totalNights',
+              header: 'Nights',
+              sortable: true,
+            },
+            {
+              property: 'payment',
+              header: 'Payment Amount',
+              sortable: true,
+              render: (datum) => `$${datum.payment.toFixed(2)}`,
+            },
+            {
+              property: 'paymentMethod',
+              header: 'Payment Method',
+              sortable: true,
+            },
+            {
+              property: 'actions',
+              header: 'Actions',
+              render: (datum) => (
+                <Button
+                  label="Cancel Booking"
+                  color="status-critical"
+                  onClick={() => {
+                    setSelectedBooking(datum.tripId);
+                    setShowCancelConfirmation(true);
+                  }}
+                />
+              ),
+            },
+          ];
+  
+          setColumns(dynamicColumns);
+        }
+      } else {
+        console.error('Failed to fetch bookings');
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
   };
+  
 
   const handleCancelBooking = () => {
+    // Logic to cancel booking
     setBookings((prevBookings) =>
-      prevBookings.map((booking) =>
-        booking.id === selectedBooking
-          ? { ...booking, status: 'Cancelled' }
-          : booking
-      )
+      prevBookings.filter((booking) => booking.tripId !== selectedBooking)
     );
     setShowCancelConfirmation(false);
     setSelectedBooking(null);
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const handleBookCruise = () => {
+    navigate('/booking');
   };
 
   return (
@@ -76,86 +128,30 @@ const ManageBookings = () => {
           />
         </Box>
 
-        
-        <DataTable
-          columns={[
-            {
-              property: 'cruise',
-              header: 'Cruise',
-              sortable: true,
-            },
-            {
-              property: 'stateroom',
-              header: 'Stateroom',
-              sortable: true,
-            },
-            {
-              property: 'passengers',
-              header: 'Passengers',
-              sortable: true,
-            },
-            {
-              property: 'nights',
-              header: 'Nights',
-              sortable: true,
-            },
-            {
-              property: 'total',
-              header: 'Total Cost',
-              sortable: true,
-            },
-            {
-              property: 'date',
-              header: 'Trip Date',
-              sortable: true,
-            },
-            {
-              property: 'bookingDate',
-              header: 'Booking Date',
-              sortable: true,
-            },
-            {
-              property: 'status',
-              header: 'Status',
-              sortable: true,
-            },
-            {
-              property: 'actions',
-              header: 'Actions',
-              render: (datum) =>
-                datum.status !== 'Cancelled' ? (
-                  <Button
-                    label="Cancel Booking"
-                    color="status-critical"
-                    onClick={() => {
-                      setSelectedBooking(datum.id);
-                      setShowCancelConfirmation(true);
-                    }}
-                  />
-                ) : (
-                  <Text color="status-disabled">Cancelled</Text>
-                ),
-            },
-          ]}
-          data={bookings}
-          sortable
-          size="large"
-        />
+        {bookings.length > 0 ? (
+          <DataTable
+            columns={columns}
+            data={bookings}
+            sortable
+            size="large"
+          />
+        ) : (
+          <Text>No bookings available</Text>
+        )}
 
-      
         {showCancelConfirmation && (
           <Layer
             onEsc={() => setShowCancelConfirmation(false)}
             onClickOutside={() => setShowCancelConfirmation(false)}
-            style={{ borderRadius: '10px' }} 
+            style={{ borderRadius: '10px' }}
           >
             <Box pad="medium" gap="medium" width="medium" round="small">
               <Heading level={3} margin="none">
                 Confirm Cancellation
               </Heading>
               <Text>
-                Are you sure you want to cancel this booking? This action cannot
-                be undone.
+                Are you sure you want to cancel this booking? This action
+                cannot be undone.
               </Text>
               <Box direction="row" gap="small" justify="end">
                 <Button
