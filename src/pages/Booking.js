@@ -192,6 +192,70 @@ const Booking = () => {
     "Starboard Side": 1.3,
   };
 
+  const confirmBookingClick = async () => {
+    const cruiseData = cruises.find((cruise) => cruise.name === updatedFormData.cruise);
+    const totalAmountPayable = calculateTotal().toFixed(2);
+    const price = parseFloat(totalAmountPayable);
+  
+    // Convert passengers from dob to dateOfBirth
+    const updatedPassengers = updatedFormData.passengerDetails.map((p) => ({
+      type: p.type,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      dateOfBirth: p.dob, // rename dob to dateOfBirth
+      gender: p.gender,
+      nationality: p.nationality
+    }));
+  
+    const payload = {
+      "BookingConfirmed": {
+        "groupId": groupId,
+        "currentDate": new Date().toLocaleString(),
+        "loginOwner": user?.email || "",
+        "cruise": updatedFormData.cruise,
+        "departurePort": cruiseData ? `Port of ${cruiseData.departurePort}` : "",
+        "destinationPort": cruiseData ? `Port of ${cruiseData.destinationPort}` : "",
+        "sideOfShip": updatedFormData.sideOfShip,
+        "stateroom": updatedFormData.stateroom,
+        "price": totalAmountPayable,
+        "selectedRestaurants": updatedFormData.selectedRestaurants,
+        "packages": updatedFormData.packages,
+        "passengerDetails": updatedPassengers,
+        "startDate": new Date(updatedFormData.startDate).toISOString(),
+        "endDate": new Date(updatedFormData.endDate).toISOString(),
+        "nights": updatedFormData.nights,
+        "paymentMethod": updatedFormData.paymentMethod
+      }
+    };
+  
+    console.log(payload);    
+  
+    try {
+      const response = await fetch("http://localhost:8080/api/booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Booking successful:", data);
+        alert("Booking confirmed successfully!");
+        setIsBookingConfirmed(false);
+      } else {
+        console.error("Failed to confirm booking", response.status);
+        alert("Failed to confirm booking. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error confirming booking:", error);
+      alert("An error occurred while confirming the booking.");
+    }
+  };
+  
+  
+
   const handleNextPage = () => {
     // Validation for required fields
     if (currentPage === 1 && (!formData.cruise || !formData.sideOfShip)) {
@@ -328,31 +392,31 @@ const Booking = () => {
     const cruiseData = cruises.find((cruise) => cruise.name === formData.cruise);
     const totalAmountPayable = calculateTotal().toFixed(2);
 
-    console.log(
-      "Booking Confirmed: ",
-      JSON.stringify(
-        {
-          groupId: groupId,
-          currentDate: new Date().toLocaleString(),
-          email: user?.email,
-          cruise: updatedFormData.cruise,
-          departurePort: "Port of " + cruiseData?.departurePort,
-          destinationPort: "Port of " + cruiseData?.destinationPort,
-          sideOfShip: updatedFormData.sideOfShip,
-          stateroom: updatedFormData.stateroom,
-          selectedRestaurants: updatedFormData.selectedRestaurants,
-          packages: updatedFormData.packages,
-          passengerDetails: updatedFormData.passengerDetails,
-          startDate: updatedFormData.startDate,
-          endDate: updatedFormData.endDate,
-          nights: updatedFormData.nights,
-          paymentMethod: updatedFormData.paymentMethod,
-          price: totalAmountPayable,
-        },
-        null,
-        2
-      )
-    );
+    // console.log(
+    //   "Booking Confirmed: ",
+    //   JSON.stringify(
+    //     {
+    //       groupId: groupId,
+    //       currentDate: new Date().toLocaleString(),
+    //       email: user?.email,
+    //       cruise: updatedFormData.cruise,
+    //       departurePort: "Port of " + cruiseData?.departurePort,
+    //       destinationPort: "Port of " + cruiseData?.destinationPort,
+    //       sideOfShip: updatedFormData.sideOfShip,
+    //       stateroom: updatedFormData.stateroom,
+    //       selectedRestaurants: updatedFormData.selectedRestaurants,
+    //       packages: updatedFormData.packages,
+    //       passengerDetails: updatedFormData.passengerDetails,
+    //       startDate: updatedFormData.startDate,
+    //       endDate: updatedFormData.endDate,
+    //       nights: updatedFormData.nights,
+    //       paymentMethod: updatedFormData.paymentMethod,
+    //       price: totalAmountPayable,
+    //     },
+    //     null,
+    //     2
+    //   )
+    // );
     setIsBookingConfirmed(true);
   };
 
@@ -809,15 +873,15 @@ const Booking = () => {
           <FormField>
             <CheckBoxGroup
               options={[
-                "Common Buffet (6th Floor)",
-                "Italian Specialty (8th Floor)",
-                "Mexican Specialty (7th Floor)",
-                "La-carte Continental (6th Floor)",
-                "Tokyo Ramen Japanese (5th Floor)",
-                "Ming Wok Chinese (5th Floor)",
-                "Round Clock Café (10th Floor)",
-                "Pool Bar (10th Floor)",
-                "Stout Bar (7th Floor)",
+                "Common Buffett",
+                "Italian Specialty",
+                "Mexican Specialty",
+                "La-carte Continental",
+                "Tokyo Ramen Japanese",
+                "Ming Wok Chinese",
+                "Round Clock Café",
+                "Pool Bar",
+                "Stout Bar",
               ]}
               value={formData.selectedRestaurants || []}
               onChange={({ value }) =>
@@ -967,20 +1031,23 @@ const Booking = () => {
           onEsc={() => setIsBookingConfirmed(false)}
           onClickOutside={() => setIsBookingConfirmed(false)}
         >
-          <Box pad="medium" gap="small" round="large">
+          <Box pad="medium" gap="small" round="large" >
             <Text>Are you sure you want to confirm your booking?</Text>
             <Text>
               <strong>Total Amount Due:</strong> ${calculateTotal().toFixed(2)}
             </Text>
-            <Button 
-            label="Confirm"
-            onClick={{}}
-            />
-            <Button
-              label="Close"
-              onClick={() => setIsBookingConfirmed(false)}
+            <Box direction="row" pad="small" gap="small" alignSelf="center">
+              <Button 
+              label="Confirm"
+              onClick={confirmBookingClick}
               primary
-            />
+              />
+              <Button
+                label="Close"
+                onClick={() => setIsBookingConfirmed(false)}
+                secondary
+              />
+            </Box>
           </Box>
         </Layer>
       )}
