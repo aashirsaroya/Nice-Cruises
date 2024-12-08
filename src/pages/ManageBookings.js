@@ -97,14 +97,39 @@ const ManageBookings = () => {
   };
   
 
-  const handleCancelBooking = () => {
-    // Logic to cancel booking
-    setBookings((prevBookings) =>
-      prevBookings.filter((booking) => booking.tripId !== selectedBooking)
-    );
-    setShowCancelConfirmation(false);
-    setSelectedBooking(null);
+  const handleCancelBooking = async () => {
+    try {
+      const bookingToDelete = bookings.find((booking) => booking.tripId === selectedBooking);
+      
+      if (!bookingToDelete) {
+        console.error('Booking not found');
+        setShowCancelConfirmation(false);
+        return;
+      }
+  
+      const response = await fetch(`http://localhost:8080/api/delete-booking`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([bookingToDelete]),
+      });
+  
+      if (response.ok) {
+        
+        setBookings((prevBookings) =>
+          prevBookings.filter((booking) => booking.tripId !== selectedBooking)
+        );
+        setShowCancelConfirmation(false);
+        setSelectedBooking(null);
+      } else {
+        console.error('Failed to delete booking');
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+    }
   };
+  
 
   useEffect(() => {
     fetchBookings();
