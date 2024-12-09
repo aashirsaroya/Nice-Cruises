@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -8,107 +8,127 @@ import {
   Form,
   FormField,
   TextInput,
-  Select,
-  Pagination,
+  Text,
 } from 'grommet';
-import Header  from '../components/Header';
+import Header from '../components/Header';
 import axios from 'axios';
 
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 const AdminDashboard = () => {
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      customer: 'John Doe',
-      cruise: 'Caribbean Getaway',
-      stateroom: 'The Haven Suite',
-      passengers: 2,
-      nights: 5,
-      total: '$1200',
-      date: '2024-11-20',
-    },
-    {
-      id: 2,
-      customer: 'Jane Smith',
-      cruise: 'Mediterranean Adventure',
-      stateroom: 'Oceanview Window',
-      passengers: 4,
-      nights: 7,
-      total: '$2000',
-      date: '2024-11-22',
-    },
-  ]);
-
-  const [cruiseData, setCruiseData] = useState([
-    { id: 1, name: 'Caribbean Getaway' },
-    { id: 2, name: 'Mediterranean Adventure' },
-  ]);
-
-  const [stateroomData, setStateroomData] = useState([
-    { id: 1, type: 'The Haven Suite' },
-    { id: 2, type: 'Oceanview Window' },
-  ]);
-
+  const [bookings, setBookings] = useState([]);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
-  const [showManageEntities, setShowManageEntities] = useState(false);
+  const [adminForm, setAdminForm] = useState({ username: '', password: '', firstName: '', lastName: '' });
+  const [confirmDeleteBookingId, setConfirmDeleteBookingId] = useState(null);
 
-  const [adminForm, setAdminForm] = useState({ username: '', password: '' });
-  const [entityForm, setEntityForm] = useState({
-    type: '',
-    name: '',
-  });
+  // New state for showing the analytics popup
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
-const handleAddAdmin = async () => {
-  try {
-    const payload = {
-      firstName: adminForm.firstName, 
-      lastName: adminForm.lastName,
-      email: adminForm.username, 
-      password: adminForm.password,
-    };
+  const fetchBookings = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/api/admin/manage-booking');
+      const responseData = response.data;
+      const allBookings = [];
+      Object.keys(responseData).forEach((email) => {
+        responseData[email].forEach((b) => {
+          allBookings.push({
+            ...b,
+            customer: email,
+          });
+        });
+      });
 
-    const response = await axios.post('http://localhost:8080/api/users/admin/register', payload);
-    console.log(response.data); 
-    alert('Admin registered successfully!');
-    setShowAddAdmin(false);
-    setAdminForm({ username: '', password: '', firstName: '', lastName: '' });
-  } catch (error) {
-    console.error(error);
-    alert('Error occurred while registering Admin: ' + error.response.data);
-  }
-};
+      const uniqueBookings = allBookings.filter(
+        (newBooking, index, self) =>
+          index === self.findIndex((bk) => bk.groupId === newBooking.groupId)
+      );
 
-
-  const handleAddEntity = () => {
-    if (entityForm.type === 'Cruise') {
-      setCruiseData([...cruiseData, { id: Date.now(), name: entityForm.name }]);
-    } else if (entityForm.type === 'Stateroom') {
-      setStateroomData([
-        ...stateroomData,
-        { id: Date.now(), type: entityForm.name },
-      ]);
+      setBookings(uniqueBookings); 
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      alert('Error occurred while fetching bookings: ' + error);
     }
-    setShowManageEntities(false);
-    setEntityForm({ type: '', name: '' });
   };
 
-  const handleDeleteBooking = (id) => {
-    const updatedBookings = bookings.filter((booking) => booking.id !== id);
-    setBookings(updatedBookings);
+  const handleAddAdmin = async () => {
+    try {
+      const payload = {
+        firstName: adminForm.firstName,
+        lastName: adminForm.lastName,
+        email: adminForm.username,
+        password: adminForm.password,
+      };
+
+      const response = await axios.post('http://localhost:8080/api/users/admin/register', payload);
+      console.log(response.data);
+      alert('Admin registered successfully!');
+      setShowAddAdmin(false);
+      setAdminForm({ username: '', password: '', firstName: '', lastName: '' });
+    } catch (error) {
+      console.error(error);
+      alert('Error occurred while registering Admin: ' + (error.response?.data || error.message));
+    }
+  };
+
+  const handleDeleteBooking = async (id) => {
+    try {
+      const bookingToDelete = bookings.find((b) => b.groupId === id);
+
+      if (!bookingToDelete) {
+        alert('Booking not found.');
+        setConfirmDeleteBookingId(null);
+        return;
+      }
+
+      const { customer, ...cleanBooking } = bookingToDelete;
+
+      await axios.delete('http://localhost:8080/api/delete-booking', {
+        data: [cleanBooking],
+      });
+
+      await fetchBookings();
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      alert('Error occurred while deleting booking: ' + error.message);
+    } finally {
+      setConfirmDeleteBookingId(null);
+    }
+  };
+
+  // Prepare analytics data
+  const generateAnalyticsData = () => {
+    const cruiseCounts = {};
+    bookings.forEach((b) => {
+      cruiseCounts[b.cruiseName] = (cruiseCounts[b.cruiseName] || 0) + 1;
+    });
+
+    const labels = Object.keys(cruiseCounts);
+    const dataValues = Object.values(cruiseCounts);
+
+    return { labels, dataValues };
   };
 
   return (
-     <Box fill>
-        <Header title="NICE Cruises Admin Dashboard" />
+    <Box fill>
+      <Header title="NICE Cruises Admin Dashboard" />
 
-        <Box direction="row" justify="evenly" pad={{ vertical: 'small' }}>
-          <Button
-            label="Add Admin"
-            onClick={() => setShowAddAdmin(true)}
-            primary
-          />
+      <Box direction="row" justify="evenly" pad={{ vertical: 'small' }}>
+        <Button label="Add Admin" onClick={() => setShowAddAdmin(true)} primary />
+        <Button label="Refresh" onClick={fetchBookings} />
+        {/* New button to show the analytics */}
+        <Button label="See Analytics" onClick={() => setShowAnalytics(true)} />
       </Box>
 
       <Box pad="medium">
@@ -118,12 +138,12 @@ const handleAddAdmin = async () => {
         <DataTable
           columns={[
             { property: 'customer', header: 'Customer', sortable: true },
-            { property: 'cruise', header: 'Cruise', sortable: true },
-            { property: 'stateroom', header: 'Stateroom', sortable: true },
-            { property: 'passengers', header: 'Passengers', sortable: true },
-            { property: 'nights', header: 'Nights', sortable: true },
-            { property: 'total', header: 'Total', sortable: true },
-            { property: 'date', header: 'Booking Date', sortable: true },
+            { property: 'cruiseName', header: 'Cruise Name', sortable: true },
+            { property: 'stateRoomName', header: 'State Room Name', sortable: true },
+            { property: 'peopleNum', header: 'Passengers', sortable: true },
+            { property: 'totalNights', header: 'Nights', sortable: true },
+            { property: 'payment', header: 'Total', sortable: true },
+            { property: 'paymentDate', header: 'Payment Date', sortable: true },
             {
               property: 'actions',
               header: 'Actions',
@@ -131,22 +151,13 @@ const handleAddAdmin = async () => {
                 <Button
                   label="Delete"
                   color="status-critical"
-                  onClick={() => handleDeleteBooking(datum.id)}
+                  onClick={() => setConfirmDeleteBookingId(datum.groupId)}
                 />
               ),
             },
           ]}
-          data={bookings.slice(
-            (currentPage - 1) * itemsPerPage,
-            currentPage * itemsPerPage
-          )}
+          data={bookings}
           sortable
-        />
-        <Pagination
-          numberItems={bookings.length}
-          step={itemsPerPage}
-          page={currentPage}
-          onChange={({ page }) => setCurrentPage(page)}
         />
       </Box>
 
@@ -161,65 +172,99 @@ const handleAddAdmin = async () => {
               Add Admin
             </Heading>
             <Form
-            value={adminForm}
-            onChange={(nextValue) => setAdminForm(nextValue)}
-            onSubmit={handleAddAdmin}
-          >
-            <FormField name="firstName" label="First Name" required>
-              <TextInput name="firstName" placeholder="Enter first name" />
-            </FormField>
-            <FormField name="lastName" label="Last Name" required>
-              <TextInput name="lastName" placeholder="Enter last name" />
-            </FormField>
-            <FormField name="username" label="Email" required>
-              <TextInput name="username" placeholder="Enter email" />
-            </FormField>
-            <FormField name="password" label="Password" required>
-              <TextInput
-                name="password"
-                type="password"
-                placeholder="Enter password"
-              />
-            </FormField>
-            <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
-              <Button label="Cancel" onClick={() => setShowAddAdmin(false)} />
-              <Button label="Add" type="submit" primary />
-            </Box>
-          </Form>
+              value={adminForm}
+              onChange={(nextValue) => setAdminForm(nextValue)}
+              onSubmit={handleAddAdmin}
+            >
+              <FormField name="firstName" label="First Name" required>
+                <TextInput name="firstName" placeholder="Enter first name" />
+              </FormField>
+              <FormField name="lastName" label="Last Name" required>
+                <TextInput name="lastName" placeholder="Enter last name" />
+              </FormField>
+              <FormField name="username" label="Email" required>
+                <TextInput name="username" placeholder="Enter email" />
+              </FormField>
+              <FormField name="password" label="Password" required>
+                <TextInput name="password" type="password" placeholder="Enter password" />
+              </FormField>
+              <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
+                <Button label="Cancel" onClick={() => setShowAddAdmin(false)} />
+                <Button label="Add" type="submit" primary />
+              </Box>
+            </Form>
           </Box>
         </Layer>
       )}
 
-      {showManageEntities && (
+      {confirmDeleteBookingId && (
         <Layer
-          onEsc={() => setShowManageEntities(false)}
-          onClickOutside={() => setShowManageEntities(false)}
+          onEsc={() => setConfirmDeleteBookingId(null)}
+          onClickOutside={() => setConfirmDeleteBookingId(null)}
           style={{ borderRadius: '10px' }}
         >
           <Box pad="medium" gap="small" width="medium" round="small">
             <Heading level={3} margin="none">
-              Manage Cruises & Staterooms
+              Confirm Deletion
             </Heading>
-            <Form
-              value={entityForm}
-              onChange={(nextValue) => setEntityForm(nextValue)}
-              onSubmit={handleAddEntity}
-            >
-              <FormField name="type" label="Type" required>
-                <Select
-                  name="type"
-                  options={['Cruise', 'Stateroom']}
-                  placeholder="Select type"
-                />
-              </FormField>
-              <FormField name="name" label="Name" required>
-                <TextInput name="name" placeholder="Enter name" />
-              </FormField>
-              <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
-                <Button label="Cancel" onClick={() => setShowManageEntities(false)} />
-                <Button label="Add" type="submit" primary />
-              </Box>
-            </Form>
+            <Text>Are you sure you want to delete this booking?</Text>
+            <Box direction="row" gap="small" justify="end" margin={{ top: 'small' }}>
+              <Button label="No" onClick={() => setConfirmDeleteBookingId(null)} />
+              <Button
+                label="Yes"
+                onClick={() => handleDeleteBooking(confirmDeleteBookingId)}
+                primary
+              />
+            </Box>
+          </Box>
+        </Layer>
+      )}
+
+      {showAnalytics && (
+        <Layer
+          onEsc={() => setShowAnalytics(false)}
+          onClickOutside={() => setShowAnalytics(false)}
+          style={{ borderRadius: '10px' }}
+        >
+          <Box pad="medium" gap="small" width="medium" round="small">
+            <Heading level={3} margin={{ bottom: 'small' }}>
+              Analytics
+            </Heading>
+            {(() => {
+              const { labels, dataValues } = generateAnalyticsData();
+
+              if (labels.length === 0) {
+                return <Text>No bookings available for analytics.</Text>;
+              }
+
+              const data = {
+                labels,
+                datasets: [
+                  {
+                    label: 'Number of Bookings by Cruise',
+                    data: dataValues,
+                    backgroundColor: [
+                      '#FF6384',
+                      '#36A2EB',
+                      '#FFCE56',
+                      '#4BC0C0',
+                      '#9966FF',
+                      '#FF9F40',
+                    ],
+                    hoverOffset: 4,
+                  },
+                ],
+              };
+
+              return (
+                <Box width="medium" height="medium" justify="center" align="center">
+                  <Pie data={data} options={{ maintainAspectRatio: false }} />
+                </Box>
+              );
+            })()}
+            <Box direction="row" justify="end" margin={{ top: 'small' }}>
+              <Button label="Close" onClick={() => setShowAnalytics(false)} />
+            </Box>
           </Box>
         </Layer>
       )}
