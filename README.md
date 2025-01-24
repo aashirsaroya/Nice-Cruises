@@ -87,29 +87,29 @@ CREATE DATABASE nice_cruises;
 
 ## Features
 
-### Customer Features:
-• Booking Management: Book cruise trips with options for staterooms, packages, and restaurants.
-• Entertainment: View included onboard activities.
-• Account Management: Login, register, and reset password.
+### Customer Features:<br>
+• Booking Management: Book cruise trips with options for staterooms, packages, and restaurants.<br>
+• Entertainment: View included onboard activities.<br>
+• Account Management: Login, register, and reset password.<br>
 
-### Admin Features:
-• Manage Bookings: Add or remove bookings and view all customer bookings.
-• Analytics: Visualize cruise data using charts for better decision-making.
+### Admin Features:<br>
+• Manage Bookings: Add or remove bookings and view all customer bookings.<br>
+• Analytics: Visualize cruise data using charts for better decision-making.<br>
 
 ## API Endpoints
 
-### User Authentication
-• POST /api/users/login: Login for customers and admins.
-• POST /api/users/register: Register new users.
-• POST /api/auth/forgot-password: Request OTP for password reset.
-• POST /api/auth/reset-password: Reset password with OTP.
+### User Authentication<br>
+• POST /api/users/login: Login for customers and admins.<br>
+• POST /api/users/register: Register new users.<br>
+• POST /api/auth/forgot-password: Request OTP for password reset.<br>
+• POST /api/auth/reset-password: Reset password with OTP.<br>
 
-### Booking Management
-• GET /api/manage-booking: View customer bookings.
-• POST /api/booking: Create a booking.
-• DELETE /api/delete-booking: Cancel a booking.
+### Booking Management<br>
+• GET /api/manage-booking: View customer bookings.<br>
+• POST /api/booking: Create a booking.<br>
+• DELETE /api/delete-booking: Cancel a booking.<br>
 
-### Admin Analytics
+### Admin Analytics<br>
 • GET /api/admin/manage-booking: Retrieve all bookings for admin analytics.
 
 Developed with ❤️ by Aashir Saroya
