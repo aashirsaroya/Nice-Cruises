@@ -1,70 +1,116 @@
-# Getting Started with Create React App
+# NICE Cruises Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+NICE Cruises is a full-stack application that allows customers to book cruise trips, manage bookings, and explore entertainment and dining options, while providing admins with tools for managing bookings and analytics.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Table of Contents
+1. [Technologies Used](#technologies-used)
+2. [Project Structure](#project-structure)
+3. [Frontend Setup](#frontend-setup)
+4. [Backend Setup](#backend-setup)
+5. [Database Setup](#database-setup)
+6. [Features](#features)
+7. [API Endpoints](#api-endpoints)
+8. [License](#license)
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Frontend:
+- React.js
+- Grommet UI Library
+- React Router
 
-### `npm test`
+### Backend:
+- Java Spring Boot
+- RESTful APIs
+- MySQL Database
+- Java Persistence API (JPA)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Project Structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Frontend
+src/ ├── components/ │ ├── AdminDashboard.js │ ├── Booking.js │ ├── ContactSupport.js │ ├── ForgotPassword.js │ ├── Header.js │ ├── PrivateRoute.js │ └── Register.js ├── pages/ │ ├── HomePage.js │ ├── Login.js │ ├── ManageBookings.js │ ├── UserContext.js └── App.js
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Backend
+src/main/java/com/example/app/ ├── config/ ├── controller/ │ ├── BookingPageController.java │ ├── PasswordResetController.java │ ├── SidesController.java │ ├── StateRoomController.java │ └── UserController.java ├── dto/ │ ├── BookingDTO.java │ ├── PasswordResetDTO.java │ └── UserRegistrationDTO.java ├── model/ │ ├── Cruise.java │ ├── Entertainment.java │ ├── Invoice.java │ ├── Packages.java │ ├── Passenger.java │ ├── StateRoom.java │ └── Trip.java ├── repository/ │ ├── CruiseRepository.java │ ├── InvoiceRepository.java │ ├── PassengerRepository.java │ ├── StateRoomRepository.java │ └── UserRegistrationRepository.java ├── service/ │ ├── BookingService.java │ ├── EmailService.java │ ├── PassengerService.java │ └── UserService.java └── AppApplication.java
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Frontend Setup
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Navigate to the `frontend` directory.
+2. Install dependencies:
+   ```bash
+   npm install
+npm start
+3. Start the development server:
+  ```bash
+   npm start
+4. The frontend will be accessible at http://localhost:3000.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
+## Backend Setup
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Ensure you have Java 11+ and Maven installed.
+2. Navigate to the backend directory.
+3. Configure the MySQL database connection in application.properties:
+spring.datasource.url=jdbc:mysql://localhost:3306/nice_cruises
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+4. Build and run the application:
+mvn spring-boot:run
+5. The backend will be accessible at http://localhost:8080.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Database Setup
 
-### Code Splitting
+1. Install and configure MySQL.
+2. Create a database:
+CREATE DATABASE nice_cruises;
+3. Update the database credentials in application.properties as shown above.
+4. Run the Spring Boot application to auto-generate tables using JPA.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
+Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Customer Features:
+• Booking Management: Book cruise trips with options for staterooms, packages, and restaurants.
+• Entertainment: View included onboard activities.
+• Account Management: Login, register, and reset password.
+Admin Features:
+• Manage Bookings: Add or remove bookings and view all customer bookings.
+• Analytics: Visualize cruise data using charts for better decision-making.
 
-### Making a Progressive Web App
+API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+User Authentication
+• POST /api/users/login: Login for customers and admins.
+• POST /api/users/register: Register new users.
+• POST /api/auth/forgot-password: Request OTP for password reset.
+• POST /api/auth/reset-password: Reset password with OTP.
+Booking Management
+• GET /api/manage-booking: View customer bookings.
+• POST /api/booking: Create a booking.
+• DELETE /api/delete-booking: Cancel a booking.
+Admin Analytics
+• GET /api/admin/manage-booking: Retrieve all bookings for admin analytics.
 
-### Advanced Configuration
+License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-### Deployment
+Developed with ❤️ by Aashir Saroya
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-### `npm run build` fails to minify
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+
+
+
