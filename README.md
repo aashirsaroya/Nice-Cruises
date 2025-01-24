@@ -12,7 +12,7 @@ NICE Cruises is a full-stack application that allows customers to book cruise tr
 5. [Database Setup](#database-setup)
 6. [Features](#features)
 7. [API Endpoints](#api-endpoints)
-8. [License](#license)
+
 
 ---
 
